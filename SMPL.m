@@ -1,6 +1,6 @@
 clear
 addpath('utils/')
-load('models/male.mat')
+load('models/male_simple.mat')
 
 vis_vert = 1;
 %% flatten the parameters
@@ -35,6 +35,7 @@ if vis_vert
     plotVertices(v_tem_vec,faces,N);
 end
 %% input parameters
+tic
 thetas = [1.157, 1.091, 1.213, 0.224, 0.062, 0.072, 0.143, -0.086, -0.049, 0.091, -0.019, -0.017, -0.008, -0.156, -0.080, 0.178, 0.063, 0.021, -0.024, -0.025, 0.040, -0.162, 0.162, 0.114, -0.227, -0.119, 0.054, 0.025, -0.027, 0.018, -0.066, 0.149, -0.193, -0.010, 0.085, 0.003, 0.081, 0.137, -0.037, -0.054, -0.158, -0.229, 0.068, 0.110, 0.462, 0.415, 0.020, -0.019, -0.121, -0.745, -0.525, 0.156, 0.122, 0.846, 0.047, -1.991, 0.993, 0.153, 0.382, -0.100, -0.305, -0.174, 0.806, -0.012, -0.011, -0.276, 0.255, 0.008, -0.103, 0.092, 0.084, 0.062];
 
 betas = rand(10, 1);
@@ -70,7 +71,7 @@ for i = 1:K
         local_trans = eye(4);
         local_trans(1:3, 1:3) = rotmat;
         local_trans(1:3, 4) = trans(1:3, 1);
-        disp(trans)
+%         disp(trans)
         global_transform(i, :, :) = squeeze(global_transform(kintree_table(1, i), :, :)) ...
             * local_trans;
     end
@@ -83,8 +84,6 @@ for i = 1:K
 end % end transformation
 
 j_poses = reshape(global_transform(:, 1:3, 4), 72, 1);
-plotSkeleton(j_poses,kintree_table)
-
 %% pose blending 
 
 % skip this 
@@ -97,11 +96,18 @@ coefficients = weights*global_transform_remove_vec;
 coefficients = reshape(coefficients,N,4,4);
 v_shaped_nor = reshape(v_shaped,N,4);
 v_rot = zeros(N,4);
-for i = 1:N
-   rotmat = squeeze(coefficients(i,:,:));
-   v_tem = rotmat*v_shaped_nor(i,:)';
-   v_rot(i,:) = v_tem';
+% for i = 1:N
+%    rotmat = squeeze(coefficients(i,:,:));
+%    v_tem = rotmat*v_shaped_nor(i,:)';
+%    v_rot(i,:) = v_tem';
+% end
+for j = 1:4
+   v_rot(:,j) = coefficients(:,j,1).*v_shaped_nor(:,1) +...
+              coefficients(:,j,2).*v_shaped_nor(:,2) +...
+              coefficients(:,j,3).*v_shaped_nor(:,3) +...
+              coefficients(:,j,4).*v_shaped_nor(:,4); 
 end
+toc
 %%
 if vis_vert
     figure(3)

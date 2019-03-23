@@ -7,7 +7,10 @@ function plotVertices( v_shaped ,faces,N)
         v = reshape(v_shaped,N,4);
         v = v(:,1:3);
     end
-    patch('Faces', faces, 'Vertices',v, 'FaceColor', 'w')
+    fvc = v(:,3);
+    patch('Faces', faces, 'Vertices',v,'EdgeColor','none',...
+        'FaceVertexCData',fvc,'FaceColor','interp',...
+        'FaceLighting','gouraud')
     view(3)
     axis equal
 
