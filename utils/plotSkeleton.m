@@ -6,7 +6,8 @@ function plotSkeleton(joints,E)
     hold on;
     color = ['g','r','k','g','r','k','g','r','k','g','r','k','g','r','k','g','r','g','r','g','r','g','r'];
     for ie = 2:nE + 1
-        plot3(Xt(1,E(ie,:)),Xt(2,E(ie,:)),Xt(3,E(ie,:)),color(ie-1))
+        plot3(Xt(1,E(ie,:)),Xt(2,E(ie,:)),Xt(3,E(ie,:)),color(ie-1),...
+            'LineWidth',2)
     end
 
 
