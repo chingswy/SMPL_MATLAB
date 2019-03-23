@@ -93,5 +93,17 @@ plotSkeleton(j_poses,kintree_table)
 global_transform_remove_vec = reshape(global_transform_remove,24,16);
 % (6980,16) = (6980,24) * (24,16)
 coefficients = weights*global_transform_remove_vec;
-
-% verts: (6890 * 4, 1)
+% (N,4,4) <- (N,16)
+coefficients = reshape(coefficients,N,4,4);
+v_shaped_nor = reshape(v_shaped,N,4);
+v_rot = zeros(N,4);
+for i = 1:N
+   rotmat = squeeze(coefficients(i,:,:));
+   v_tem = rotmat*v_shaped_nor(i,:)';
+   v_rot(i,:) = v_tem';
+end
+%%
+if vis_vert
+    figure(3)
+    plotVertices(v_rot,faces,N) 
+end
