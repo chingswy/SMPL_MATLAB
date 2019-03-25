@@ -40,6 +40,8 @@ betas = 3 * (rand(10, 1) - 0.5);
 
 %%
 tic
-[verts, joints] = SMPLmodel(thetas, betas);
-plotVertices(verts, faces, N)
+for j = 1:1
+    [verts, joints] = SMPLmodel(thetas, betas);
+    plotVertices(verts, faces, N)
+end
 toc
