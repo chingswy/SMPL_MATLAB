@@ -1,50 +1,74 @@
 % Emanuele Ruffaldi 2017 @ SSSA
-function [R, jacobian] = so3exp(omega)
+function [rotationMatrix, dRdr] = so3exp(rotationVector)
 
     needJacobian = (nargout > 1);
 
-    theta = norm(omega);
+    if theta < 1e-6
+        rotationMatrix = eye(3, 'like', rotationVector);
 
-    if theta < 1e-12
-        % Original
-        %     A = 1;
-        %     B = 0.5;
-        %     C = 1/6;
-        %     S = zeros(3);
-        %     R = eye(3) + A*S + B*S^2;
-        %     V = eye(3) + B*S + C*S^2;
-
-        N = 10;
-        R = eye(3);
-        xM = eye(3);
-        cmPhi = skew(omega);
-
-        for n = 1:N
-            xM = xM * (cmPhi / n);
-            R = R + xM;
+        if needJacobian
+            dRdr = [0 0 0; ...
+                    0 0 1; ...
+                    0 - 1 0; ...
+                    0 0 - 1; ...
+                    0 0 0; ...
+                    1 0 0; ...
+                    0 1 0; ...
+                    -1 0 0; ...
+                    0 0 0];
+            dRdr = cast(dRdr, 'like', rotationVector);
         end
 
-        % Project the resulting rotation matrix back onto SO(3)
-        R = R / sqrtm(R' * R);
+        return;
+    end
 
-    else
-        %Original
-        A = sin(theta) / theta;
-        B = (1 - cos(theta)) / (theta^2);
-        C = (theta - sin(theta)) / (theta^3);
-        S = skew(omega);
-        R = eye(3) + A * S + B * S^2;
-        %V = eye(3) + B*S + C*S^2;
+    u = rotationVector ./ theta;
+    u = u(:);
+    w1 = u(1);
+    w2 = u(2);
+    w3 = u(3);
 
-        %Barfoot
-        if 0 == 1
-            axis = omega / theta;
-            cp = cos(theta);
-            sp = sin(theta);
-            sa = skew(axis);
+    A = [0, -w3, w2; ...
+            w3, 0, -w1; ...
+            -w2, w1, 0];
 
-            R = cp * eye(3) + (1 - cp) * axis * (axis') + sp * sa;
-        end
+    B = u * u';
 
-        assert(abs(det(R) - 1) < 1e-5, 'unitary');
+    alpha = cos(theta);
+    beta = sin(theta);
+    gamma = 1 - alpha;
+
+    rotationMatrix = eye(3, 'like', rotationVector) * alpha + beta * A + gamma * B;
+
+    if needJacobian
+        I = eye(3, 'like', rotationVector);
+
+        % m3 = [rotationVector,theta], theta = |rotationVector|
+        dm3dr = [I; u']; % 4x3
+
+        % m2 = [u;theta]
+        dm2dm3 = [I ./ theta - rotationVector ./ theta^2; ...
+                zeros(1, 3, 'like', rotationVector) 1]; % 4x4
+
+        % m1 = [alpha;beta;gamma;A;B];
+        dm1dm2 = zeros(21, 4, 'like', rotationVector);
+        dm1dm2(1, 4) = -beta;
+        dm1dm2(2, 4) = alpha;
+        dm1dm2(3, 4) = beta;
+        dm1dm2(4:12, 1:3) = [0 0 0 0 0 1 0 - 1 0; ...
+                            0 0 - 1 0 0 0 1 0 0; ...
+                            0 1 0 - 1 0 0 0 0 0]';
+
+        dm1dm2(13:21, 1) = [2 * w1, w2, w3, w2, 0, 0, w3, 0, 0];
+        dm1dm2(13:21, 2) = [0, w1, 0, w1, 2 * w2, w3, 0, w3, 0];
+        dm1dm2(13:21, 3) = [0, 0, w1, 0, 0, w2, w1, w2, 2 * w3];
+
+        dRdm1 = zeros(9, 21, 'like', rotationVector);
+        dRdm1([1 5 9], 1) = 1;
+        dRdm1(:, 2) = A(:);
+        dRdm1(:, 3) = B(:);
+        dRdm1(:, 4:12) = beta * eye(9, 'like', rotationVector);
+        dRdm1(:, 13:21) = gamma * eye(9, 'like', rotationVector);
+
+        dRdr = dRdm1 * dm1dm2 * dm2dm3 * dm3dr;
     end
