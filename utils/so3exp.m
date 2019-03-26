@@ -1,6 +1,6 @@
 % Emanuele Ruffaldi 2017 @ SSSA
 function [rotationMatrix, dRdr] = so3exp(rotationVector)
-
+    rotationVector = rotationVector';
     needJacobian = (nargout > 1);
     theta = norm(rotationVector);
     if theta < 1e-6
@@ -22,7 +22,7 @@ function [rotationMatrix, dRdr] = so3exp(rotationVector)
         return;
     end
 
-    u = rotationVector ./ theta;
+    u = rotationVector./ theta;
     u = u(:);
     w1 = u(1);
     w2 = u(2);
