@@ -72,3 +72,4 @@ function [rotationMatrix, dRdr] = so3exp(rotationVector)
 
         dRdr = dRdm1 * dm1dm2 * dm2dm3 * dm3dr;
     end
+    % this jacobian is column first
