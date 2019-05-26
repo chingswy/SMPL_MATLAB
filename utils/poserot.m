@@ -5,9 +5,9 @@ function [ v_rot, J_DvrotDtrans, J_DvrotDvshaped ] = ...
     global weights N K;
     %% rotate all the vertices
     % global_transform_remove:(K,4,4)
-    global_transform_remove_vec = reshape(global_transform_remove, 24, 16);
+    global_transform_remove_vec = reshape(global_transform_remove, K, 16);
     
-    % (6980,16) = (6980,24) * (24,16)
+    % (6980,16) = (6980,K) * (K,16)
     coefficients = weights * global_transform_remove_vec;
     % (N,4,4) <- (N,16)
     coefficients = reshape(coefficients, N, 4, 4);
@@ -23,7 +23,7 @@ function [ v_rot, J_DvrotDtrans, J_DvrotDvshaped ] = ...
         % this jacobian is static
         % we could pre-calculate it
         % J_DvrotDtrans: (N,4,16)
-        J_DvrotDtrans = zeros(N,4,24,16);
+        J_DvrotDtrans = zeros(N,4,K,16);
         for n = 1:N
            for k = 1:K
                J_DvrotDtrans(n,:,k,:) = kron(v_shaped_nor(n,:),eye(4));

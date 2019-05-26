@@ -1,7 +1,7 @@
 from __future__ import print_function
 import cPickle as pickle
 from scipy.io import savemat
-
+import numpy as np
 # model = pickle.load(open('basicModel_f_lbs_10_207_0_v1.0.0.pkl'))
 # print(model.keys())
 # savemat('female.mat',model)
@@ -17,11 +17,13 @@ for gen in gender:
     model = pickle.load(open('SMPLH_%s.pkl'%(gen)))
     import ipdb; ipdb.set_trace()
     print(model.keys())
+    model['shapedirs'] = np.array(model['shapedirs'])
     savemat('smplh_%s.mat'%(gen),model)
 
 direct = ['LEFT', 'RIGHT']
 for d in direct:
     model = pickle.load(open('MANO_%s.pkl'%(d)))
     print(model.keys())
+    model['shapedirs'] = np.array(model['shapedirs'])
     savemat('mano_%s.mat'%(d),model)
 
