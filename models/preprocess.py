@@ -1,29 +1,44 @@
 from __future__ import print_function
-import cPickle as pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 from scipy.io import savemat
 import numpy as np
-# model = pickle.load(open('basicModel_f_lbs_10_207_0_v1.0.0.pkl'))
-# print(model.keys())
-# savemat('female.mat',model)
+from os.path import join
+import os
 
-# model = pickle.load(open('basicmodel_m_lbs_10_207_0_v1.0.0.pkl'))
-# print(model.keys())
-# savemat('male.mat',model)
+def read_pickle(filename):
+    with open(filename, 'rb') as smplh_file:
+        model = pickle.load(smplh_file, encoding='latin1')
+    return model
+
+
+savemat('female.mat',read_pickle('SMPL_MALE.pkl'))
+savemat('male.mat',read_pickle('SMPL_FEMALE.pkl'))
 
 # for the hand model
 
 gender = ['male', 'female']
 for gen in gender:
-    model = pickle.load(open('SMPLH_%s.pkl'%(gen)))
-    import ipdb; ipdb.set_trace()
-    print(model.keys())
-    model['shapedirs'] = np.array(model['shapedirs'])
-    savemat('smplh_%s.mat'%(gen),model)
+    model_name = 'SMPLH_%s.pkl'%(gen)
+    if os.path.exists(model_name):
+        model = read_pickle(model_name)
+        print(model.keys())
+        model['shapedirs'] = np.array(model['shapedirs'])
+        savemat('smplh_%s.mat'%(gen),model)
+    else:
+        print('>>> File not exists ', model_name)
 
 direct = ['LEFT', 'RIGHT']
 for d in direct:
-    model = pickle.load(open('MANO_%s.pkl'%(d)))
-    print(model.keys())
-    model['shapedirs'] = np.array(model['shapedirs'])
-    savemat('mano_%s.mat'%(d),model)
+    model_name = 'MANO_%s.pkl'%(d)
+    if os.path.exists(model_name):
+        model = read_pickle(model_name)
+        print(model.keys())
+        model['shapedirs'] = np.array(model['shapedirs'])
+        savemat('mano_%s.mat'%(d),model)
+    else:
+        print('>>> File not exists ', model_name)
+
 
